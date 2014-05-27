@@ -4,13 +4,20 @@ var debug = require('debug')('bunnydo');
 
 var noop = function () {};
 
-function copy(obj) {
+var copy = function (src) {
   var o = {};
-  Object.keys(obj).forEach(function (i) {
-    o[i] = obj[i];
-  });
+
+  if (typeof src === 'object') {
+    Object.keys(src).forEach(function (i) {
+      o[i] = src[i];
+    });
+  }
+  else {
+    o = src;
+  }
+
   return o;
-}
+};
 
 var BunnyDo = function (url, socketOptions) {
   this.url = url;
