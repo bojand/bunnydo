@@ -141,10 +141,12 @@ BunnyDo.prototype.addRpcQueue = function (queue, options, fn) {
     options = {};
   }
 
+  if(!options) options = {};
+
   if (!fn) fn = noop;
 
   if (typeof options.exclusive !== 'boolean') {
-    options = {exclusive: true};
+    options.exclusive = true;
   }
 
   var inQ = queue + '_rpc_queue_' + process.pid;
@@ -272,6 +274,8 @@ BunnyDo.prototype.worker = function (queue, message, options, fn) {
 
   if (!fn) fn = noop;
 
+  if(!options) options = {};
+
   var opts = merge({}, options);
   if (typeof opts.deliveryMode !== 'boolean') {
     opts.deliveryMode = true;
@@ -302,6 +306,8 @@ BunnyDo.prototype.rpc = function (queue, message, options, fn) {
   }
 
   if (!fn) fn = noop;
+
+  if(!options) options = {};
 
   var dorpc = function (replyTo) {
     var opts = merge({}, options);
@@ -344,7 +350,7 @@ BunnyDo.prototype.pubsub = function (exchange, message, options, fn) {
 
   if (typeof options === 'function') {
     fn = options;
-    options = {};
+    options = undefined;
   }
 
   if (!fn) fn = noop;
@@ -352,7 +358,7 @@ BunnyDo.prototype.pubsub = function (exchange, message, options, fn) {
   this.ch.assertExchange(exchange, 'fanout', {durable: false})
     .then(function (ex) {
       var data = self.toAMQPMessage(message);
-      self.ch.publish(exchange, '', data);
+      self.ch.publish(exchange, '', data, options);
       debug('sent pubsub to %s', exchange);
       return fn();
     },
