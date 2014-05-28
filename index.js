@@ -257,7 +257,7 @@ BunnyDo.prototype.worker = function (queue, message, options, fn) {
   var self = this;
   if (typeof options === 'function') {
     fn = options;
-    options = {};
+    options = null;
   }
 
   if (!fn) fn = noop;
@@ -288,7 +288,7 @@ BunnyDo.prototype.rpc = function (queue, message, options, fn) {
 
   if (typeof options === 'function') {
     fn = options;
-    options = {};
+    options = null;
   }
 
   if (!fn) fn = noop;
