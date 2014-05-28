@@ -19,6 +19,16 @@ var copy = function (src) {
   return o;
 };
 
+var merge = function(a, b){
+  var keys = Object.keys(b);
+  for (var i = 0, len = keys.length; i < len; ++i) {
+    var key = keys[i];
+    a[key] = b[key]
+  }
+  return a;
+};
+
+
 var BunnyDo = function (url, socketOptions) {
   this.url = url;
   this.connOpt = socketOptions;
@@ -257,12 +267,12 @@ BunnyDo.prototype.worker = function (queue, message, options, fn) {
   var self = this;
   if (typeof options === 'function') {
     fn = options;
-    options = null;
+    options = {};
   }
 
   if (!fn) fn = noop;
 
-  var opts = Object.create(options);
+  var opts = merge({}, options);
   if (typeof opts.deliveryMode !== 'boolean') {
     opts.deliveryMode = true;
   }
@@ -288,13 +298,13 @@ BunnyDo.prototype.rpc = function (queue, message, options, fn) {
 
   if (typeof options === 'function') {
     fn = options;
-    options = null;
+    options = {};
   }
 
   if (!fn) fn = noop;
 
   var dorpc = function (replyTo) {
-    var opts = Object.create(options);
+    var opts = merge({}, options);
     var corrId = uuid();
     opts.correlationId = corrId;
     opts.replyTo = replyTo;
