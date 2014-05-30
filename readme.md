@@ -9,7 +9,7 @@ Basic usage:
 ```js
 var Bunnydo = require('bunnydo');
 
-var amqp = new Bunnydo('amqp://localhost'');
+var amqp = new Bunnydo('amqp://localhost');
 amqp.init(function (err) {
 
   amqp.worker('work_queue', 'something to do', function (err) {
@@ -34,7 +34,7 @@ Then on the other end:
 ```js
 var Bunnydo = require('bunnydo');
 
-var amqp = new Bunnydo('amqp://localhost'');
+var amqp = new Bunnydo('amqp://localhost');
 amqp.init(function (err) {
 
   amqp.onWorker('work_queue', function (err, msg) {
