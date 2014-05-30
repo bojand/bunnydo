@@ -19,7 +19,7 @@ var copy = function (src) {
   return o;
 };
 
-var merge = function(a, b){
+var merge = function (a, b) {
   var keys = Object.keys(b);
   for (var i = 0, len = keys.length; i < len; ++i) {
     var key = keys[i];
@@ -152,7 +152,7 @@ Bunnydo.prototype.addRpcQueue = function (queue, options, fn) {
     options = {};
   }
 
-  if(!options) options = {};
+  if (!options) options = {};
 
   if (!fn) fn = noop;
 
@@ -322,7 +322,7 @@ Bunnydo.prototype.worker = function (queue, message, options, fn) {
 
   if (!fn) fn = noop;
 
-  if(!options) options = {};
+  if (!options) options = {};
 
   var opts = merge({}, options);
   if (typeof opts.deliveryMode !== 'boolean') {
@@ -363,7 +363,7 @@ Bunnydo.prototype.rpc = function (queue, message, options, fn) {
 
   if (!fn) fn = noop;
 
-  if(!options) options = {};
+  if (!options) options = {};
 
   var dorpc = function (replyTo) {
     var opts = merge({}, options);
@@ -403,7 +403,7 @@ Bunnydo.prototype.rpc = function (queue, message, options, fn) {
 
 /**
  * Set up a pubsub exchange if needed and send the message to it with the given options.
-  * @param queue
+ * @param queue
  * @param message
  * @param options
  * @param fn
