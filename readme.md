@@ -20,7 +20,7 @@ amqp.init(function (err) {
     console.dir(rpcRes); // response from RPC worker
   });
 
-  amqp.pubsub('pubsub_queue', 'something to do', function (err, rpcRes) {
+  amqp.pubsub('pubsub_queue', 'something to do', function (err) {
     // send to pubsub
   });
 });
