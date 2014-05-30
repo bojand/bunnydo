@@ -28,8 +28,13 @@ var merge = function(a, b){
   return a;
 };
 
-
-var BunnyDo = function (url, socketOptions) {
+/**
+ * Constructor
+ * @param url AMQP url
+ * @param socketOptions connection options for amqplib
+ * @constructor
+ */
+var Bunnydo = function (url, socketOptions) {
   this.url = url;
   this.connOpt = socketOptions;
   this.amqp = amqp;
@@ -57,7 +62,7 @@ var getDoneHandler = function (fn) {
  * Call this to connect and create a channel.
  * @param fn
  */
-BunnyDo.prototype.init = function (fn) {
+Bunnydo.prototype.init = function (fn) {
   if (!fn) fn = noop;
   var self = this;
   debug('connecting amqp');
@@ -76,7 +81,13 @@ BunnyDo.prototype.init = function (fn) {
   }).then(onDone, onError);
 };
 
-BunnyDo.prototype.assertQueue = function (queue, options, fn) {
+/**
+ * Basically just a wrapper for amqplib.assertQueue
+ * @param queue
+ * @param options
+ * @param fn
+ */
+Bunnydo.prototype.assertQueue = function (queue, options, fn) {
   if (typeof options === 'function') {
     fn = options;
     options = undefined;
@@ -102,7 +113,7 @@ BunnyDo.prototype.assertQueue = function (queue, options, fn) {
  * @param options
  * @param fn
  */
-BunnyDo.prototype.addWorkerQueue = function (queue, options, fn) {
+Bunnydo.prototype.addWorkerQueue = function (queue, options, fn) {
   var self = this;
 
   if (typeof options === 'function') {
@@ -133,7 +144,7 @@ BunnyDo.prototype.addWorkerQueue = function (queue, options, fn) {
  * @param options
  * @param fn
  */
-BunnyDo.prototype.addRpcQueue = function (queue, options, fn) {
+Bunnydo.prototype.addRpcQueue = function (queue, options, fn) {
   var self = this;
 
   if (typeof options === 'function') {
@@ -173,7 +184,10 @@ BunnyDo.prototype.addRpcQueue = function (queue, options, fn) {
   }
 };
 
-BunnyDo.prototype.close = function () {
+/**
+ * Close channel and connection
+ */
+Bunnydo.prototype.close = function () {
   if (this.ch) {
     this.ch.close();
   }
@@ -183,7 +197,12 @@ BunnyDo.prototype.close = function () {
   }
 };
 
-BunnyDo.prototype.toAMQPMessage = function (message) {
+/**
+ * Prepare data to be sent to AMQP. Returns a buffer instance.
+ * @param message
+ * @returns {*}
+ */
+Bunnydo.prototype.toAMQPMessage = function (message) {
   var c = copy(message);
 
   if (typeof c === 'object' && !Buffer.isBuffer(c)) {
@@ -205,7 +224,12 @@ BunnyDo.prototype.toAMQPMessage = function (message) {
   return c;
 };
 
-BunnyDo.prototype.fromAMQPMessage = function (message) {
+/**
+ * Converts data from AMQP Buffer into an object
+ * @param message
+ * @returns {*}
+ */
+Bunnydo.prototype.fromAMQPMessage = function (message) {
   var obj = copy(message);
   if (message && message.content) {
     obj = message.content.toString();
@@ -220,12 +244,20 @@ BunnyDo.prototype.fromAMQPMessage = function (message) {
   return obj;
 };
 
-BunnyDo.prototype.deleteRpcCallback = function (corrId) {
+/**
+ * Delete an RPC callback based on the correlation id
+ * @param corrId
+ */
+Bunnydo.prototype.deleteRpcCallback = function (corrId) {
   debug('deleting callback for corr id: %s', corrId);
   delete this.rpcCB[corrId];
 };
 
-BunnyDo.prototype.rpcHandler = function (msg) {
+/**
+ * Our RPC handler to the consume queue. Find the corresponding RPC callback and call it.
+ * @param msg
+ */
+Bunnydo.prototype.rpcHandler = function (msg) {
   var corrId = msg.properties ? msg.properties.correlationId : '';
   if (corrId && this.rpcCB[corrId]) {
     var cbObj = this.rpcCB[corrId];
@@ -250,7 +282,15 @@ BunnyDo.prototype.rpcHandler = function (msg) {
   }
 };
 
-BunnyDo.prototype.send = function (queue, message, options, fn) {
+/**
+ * Send message to a queue with the given options
+ * @param queue
+ * @param message
+ * @param options
+ * @param fn
+ * @returns {*}
+ */
+Bunnydo.prototype.send = function (queue, message, options, fn) {
   if (typeof options === 'function') {
     fn = options;
     options = undefined;
@@ -265,7 +305,15 @@ BunnyDo.prototype.send = function (queue, message, options, fn) {
   return fn();
 };
 
-BunnyDo.prototype.worker = function (queue, message, options, fn) {
+/**
+ * Set up a worker queue if needed and send the message to it with the given options.
+ * Default is deliveryMode = true. Returns once the message is sent.
+ * @param queue
+ * @param message
+ * @param options
+ * @param fn
+ */
+Bunnydo.prototype.worker = function (queue, message, options, fn) {
   var self = this;
   if (typeof options === 'function') {
     fn = options;
@@ -297,7 +345,15 @@ BunnyDo.prototype.worker = function (queue, message, options, fn) {
   }
 };
 
-BunnyDo.prototype.rpc = function (queue, message, options, fn) {
+/**
+ * Set up an RPC queue and consumer queue if needed and send the message to it with the given options.
+ * Calls the callback `fn` once we have the data from the RPC.
+ * @param queue
+ * @param message
+ * @param options
+ * @param fn
+ */
+Bunnydo.prototype.rpc = function (queue, message, options, fn) {
   var self = this;
 
   if (typeof options === 'function') {
@@ -345,7 +401,14 @@ BunnyDo.prototype.rpc = function (queue, message, options, fn) {
   });
 };
 
-BunnyDo.prototype.pubsub = function (exchange, message, options, fn) {
+/**
+ * Set up a pubsub exchange if needed and send the message to it with the given options.
+  * @param queue
+ * @param message
+ * @param options
+ * @param fn
+ */
+Bunnydo.prototype.pubsub = function (exchange, message, options, fn) {
   var self = this;
 
   if (typeof options === 'function') {
@@ -367,7 +430,12 @@ BunnyDo.prototype.pubsub = function (exchange, message, options, fn) {
     });
 };
 
-BunnyDo.prototype.onWorker = function (queue, fn) {
+/**
+ * Called when data is sent to the worker queue.
+ * @param queue
+ * @param fn
+ */
+Bunnydo.prototype.onWorker = function (queue, fn) {
   var self = this;
   if (!fn) fn = noop;
 
@@ -385,7 +453,12 @@ BunnyDo.prototype.onWorker = function (queue, fn) {
   }).then(null, console.warn);
 };
 
-BunnyDo.prototype.onRpc = function (queue, fn) {
+/**
+ * Called when data is sent to the RPC queue.
+ * @param queue
+ * @param fn
+ */
+Bunnydo.prototype.onRpc = function (queue, fn) {
   var self = this;
   if (!fn) fn = noop;
 
@@ -427,7 +500,12 @@ BunnyDo.prototype.onRpc = function (queue, fn) {
   }).then(null, console.warn);
 };
 
-BunnyDo.prototype.onPubsub = function (exchange, fn) {
+/**
+ * Called when data is sent to the pubsub exchange.
+ * @param queue
+ * @param fn
+ */
+Bunnydo.prototype.onPubsub = function (exchange, fn) {
   var self = this;
   if (!fn) fn = noop;
 
@@ -471,4 +549,4 @@ BunnyDo.prototype.onPubsub = function (exchange, fn) {
   }).then(null, console.warn);
 };
 
-module.exports = BunnyDo;
+module.exports = Bunnydo;
