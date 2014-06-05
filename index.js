@@ -70,7 +70,7 @@ Bunnydo.prototype.init = function (fn) {
   var onError = getErrorHandler(fn);
   var onDone = getDoneHandler(fn);
 
-  amqp.connect(this.connOpt).then(function (conn) {
+  amqp.connect(this.url, this.connOpt).then(function (conn) {
     debug('connected amqp');
     self.conn = conn;
     return conn.createChannel().then(function (ch) {

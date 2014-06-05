@@ -1,6 +1,6 @@
 {
   "name": "bunnydo",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Wrapper around amqplib to make common patterns easier.",
   "main": "index.js",
   "repository": {
