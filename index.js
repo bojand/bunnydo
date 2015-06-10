@@ -203,7 +203,7 @@ Bunnydo.prototype.close = function () {
  * @returns {*}
  */
 Bunnydo.prototype.toAMQPMessage = function (message) {
-  var c = copy(message);
+  var c = copy(message) || '';
 
   if (typeof c === 'object' && !Buffer.isBuffer(c)) {
     try {
