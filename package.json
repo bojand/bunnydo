@@ -1,6 +1,6 @@
 {
   "name": "bunnydo",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Wrapper around amqplib to make common patterns easier.",
   "main": "index.js",
   "repository": {
@@ -13,9 +13,9 @@
     "rabbitmq"
   ],
   "dependencies": {
-    "amqplib": "~0.3.0",
-    "node-uuid": "~1.4.1",
-    "debug": "~2.1.0"
+    "amqplib": "~0.4.0",
+    "uuid": "~2.0.1",
+    "debug": "~2.2.0"
   },
   "author": {
     "name": "Bojan D.",

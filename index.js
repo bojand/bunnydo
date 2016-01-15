@@ -1,5 +1,5 @@
 var amqp = require('amqplib');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var debug = require('debug')('bunnydo');
 
 var noop = function () {};
@@ -367,7 +367,7 @@ Bunnydo.prototype.rpc = function (queue, message, options, fn) {
 
   var dorpc = function (replyTo) {
     var opts = merge({}, options);
-    var corrId = uuid();
+    var corrId = uuid.v4();
     opts.correlationId = corrId;
     opts.replyTo = replyTo;
 
