@@ -123,7 +123,7 @@ Bunnydo.prototype.addWorkerQueue = function (queue, options, fn) {
 
   if (!fn) fn = noop;
 
-  if (typeof options !== 'boolean') {
+  if (typeof options.durable !== 'boolean') {
     options.durable = true;
   }
 
