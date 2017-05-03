@@ -11,8 +11,7 @@ var copy = function (src) {
     Object.keys(src).forEach(function (i) {
       o[i] = src[i];
     });
-  }
-  else {
+  } else {
     o = src;
   }
 
@@ -164,15 +163,14 @@ Bunnydo.prototype.addRpcQueue = function (queue, options, fn) {
 
   if (self.queues[queue] && self.queues[queue].queue && self.queues[queue].queue === inQ) {
     return fn(null, self.queues[queue]);
-  }
-  else {
+  } else {
 
     this.assertQueue(inQ, options, function (err, q) {
       if (queue && q) {
         var qname = q.queue;
         self.queues[queue] = q;
 
-        return self.ch.consume(qname, self.rpcHandler.bind(self), {noAck: true})
+        return self.ch.consume(qname, self.rpcHandler.bind(self), { noAck: true })
           .then(function () {
             debug('added rpc queue %s', queue);
             fn(null, q);
@@ -187,13 +185,37 @@ Bunnydo.prototype.addRpcQueue = function (queue, options, fn) {
 /**
  * Close channel and connection
  */
-Bunnydo.prototype.close = function () {
-  if (this.ch) {
-    this.ch.close();
-  }
+Bunnydo.prototype.close = function (fn) {
+  this.closeChannel(err => {
+    if (err) {
+      return fn(err)
+    }
 
+    this.closeConnection(fn)
+  })
+};
+
+/**
+ * Close channel
+ */
+Bunnydo.prototype.closeChannel = function (fn) {
+  if (this.ch) {
+    this.ch.close(fn);
+  }
+  else {
+    process.nextTick(() => fn())
+  }
+};
+
+/**
+ * Close connection
+ */
+Bunnydo.prototype.closeConnection = function (fn) {
   if (this.conn) {
-    this.conn.close();
+    this.conn.close(fn);
+  }
+  else {
+    process.nextTick(() => fn())
   }
 };
 
@@ -208,9 +230,7 @@ Bunnydo.prototype.toAMQPMessage = function (message) {
   if (typeof c === 'object' && !Buffer.isBuffer(c)) {
     try {
       c = JSON.stringify(c);
-    }
-    catch (e) {
-    }
+    } catch (e) {}
   }
 
   if (typeof c !== 'string') {
@@ -236,9 +256,7 @@ Bunnydo.prototype.fromAMQPMessage = function (message) {
 
     try {
       obj = JSON.parse(obj);
-    }
-    catch (e) {
-    }
+    } catch (e) {}
   }
 
   return obj;
@@ -273,11 +291,9 @@ Bunnydo.prototype.rpcHandler = function (msg) {
     if (cbObj.autoDelete !== false) {
       this.deleteRpcCallback(corrId);
     }
-  }
-  else if (corrId && !this.rpcCB[corrId]) {
+  } else if (corrId && !this.rpcCB[corrId]) {
     debug('got rpc reply but to unknown correlation id: %s', corrId);
-  }
-  else {
+  } else {
     debug('got rpc reply but no correlation id');
   }
 };
@@ -332,13 +348,11 @@ Bunnydo.prototype.worker = function (queue, message, options, fn) {
   var q = this.queues[queue];
   if (q) {
     this.send(queue, message, opts, fn);
-  }
-  else {
+  } else {
     self.addWorkerQueue(queue, function (err, q) {
       if (err) {
         fn(err);
-      }
-      else {
+      } else {
         self.send(queue, message, opts, fn);
       }
     });
@@ -394,8 +408,7 @@ Bunnydo.prototype.rpc = function (queue, message, options, fn) {
   self.addRpcQueue(queue, function (err, q) {
     if (!err) {
       dorpc(q.queue);
-    }
-    else {
+    } else {
       return fn(err);
     }
   });
@@ -418,16 +431,16 @@ Bunnydo.prototype.pubsub = function (exchange, message, options, fn) {
 
   if (!fn) fn = noop;
 
-  this.ch.assertExchange(exchange, 'fanout', {durable: false})
+  this.ch.assertExchange(exchange, 'fanout', { durable: false })
     .then(function (ex) {
-      var data = self.toAMQPMessage(message);
-      self.ch.publish(exchange, '', data, options);
-      debug('sent pubsub to %s', exchange);
-      return fn();
-    },
-    function (err) {
-      return fn(err);
-    });
+        var data = self.toAMQPMessage(message);
+        self.ch.publish(exchange, '', data, options);
+        debug('sent pubsub to %s', exchange);
+        return fn();
+      },
+      function (err) {
+        return fn(err);
+      });
 };
 
 /**
@@ -439,7 +452,7 @@ Bunnydo.prototype.onWorker = function (queue, fn) {
   var self = this;
   if (!fn) fn = noop;
 
-  var ok = this.ch.assertQueue(queue, {durable: true});
+  var ok = this.ch.assertQueue(queue, { durable: true });
 
   ok.then(function () {
     self.ch.consume(queue, function (msg) {
@@ -449,7 +462,7 @@ Bunnydo.prototype.onWorker = function (queue, fn) {
       data = self.fromAMQPMessage(msg);
 
       return fn(err, data);
-    }, {noAck: true});
+    }, { noAck: true });
   }).then(null, console.warn);
 };
 
@@ -462,7 +475,7 @@ Bunnydo.prototype.onRpc = function (queue, fn) {
   var self = this;
   if (!fn) fn = noop;
 
-  var ok = this.ch.assertQueue(queue, {durable: true});
+  var ok = this.ch.assertQueue(queue, { durable: true });
 
   ok.then(function () {
     self.ch.consume(queue, function (msg) {
@@ -471,7 +484,7 @@ Bunnydo.prototype.onRpc = function (queue, fn) {
       var corrId = msg.properties.correlationId;
       var replyTo = msg.properties.replyTo;
       var routingKey = msg.fields.routingKey;
-      var msgOpts = {correlationId: corrId};
+      var msgOpts = { correlationId: corrId };
 
       debug('got data from rpc queue %s. corr id: %s', routingKey, corrId);
 
@@ -521,10 +534,10 @@ Bunnydo.prototype.onPubsub = function (exchange, fn) {
     return fn(err, data);
   };
 
-  var ok = this.ch.assertExchange(exchange, 'fanout', {durable: false});
+  var ok = this.ch.assertExchange(exchange, 'fanout', { durable: false });
 
   ok = ok.then(function () {
-    return self.ch.assertQueue(exq, {exclusive: true});
+    return self.ch.assertQueue(exq, { exclusive: true });
   });
 
   ok = ok.then(function (qok) {
@@ -534,14 +547,13 @@ Bunnydo.prototype.onPubsub = function (exchange, fn) {
         self.exBindings[exchange] = qok;
         return qok.queue;
       });
-    }
-    else {
+    } else {
       return self.exBindings[exchange].queue;
     }
   });
 
   ok.then(function (queue) {
-    return self.ch.consume(queue, handler, {noAck: true});
+    return self.ch.consume(queue, handler, { noAck: true });
   });
 
   return ok.then(function () {

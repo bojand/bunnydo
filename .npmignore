@@ -1,12 +1,8 @@
-# From .gitignore
-node_modules
-temp
-.sass-cache
-.tmp/
-tmp
+*.orig
 .idea
-.orig
+.DS_Store
+node_modules
 dump.rdb
-
-# Additions for .npmignore only
-/.npmignore
+npm-debug.log
+.nyc_output
+test
